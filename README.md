@@ -26,14 +26,8 @@ http://inventwithpython.com/pyganim/
 Text word wrapping based on TextWrap from PyGame Wiki
 https://www.pygame.org/wiki/TextWrap
 
-Font 'Edmunds' by Raymond Larabie from Typodermic
-https://typodermicfonts.com/edmunds/
-
 Font 'West England' by Kevin Richey
 https://www.1001fonts.com/west-england-font.html
-
-Font 'DisposableDriodBB' by Nate Piekos from Blambot
-https://blambot.com/collections/all-fonts/products/disposable-digi
 
 Font 'aesymatt' by Brain Kent
 https://www.1001fonts.com/ae-systematic-tt-brk-font.html
