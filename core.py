@@ -4,7 +4,7 @@ import pygame as pg
 from gamestates import CoinTossScreen, ShootOut, DustSettling, PlayerSelect, Instructions
 from state_engine import Game
 
-if __name__ == "__main__":
+def run_game():
     print('initializing game')
     pg.init()
     screen = pg.display.set_mode((1024, 576))
@@ -20,3 +20,6 @@ if __name__ == "__main__":
     game.run()
     pg.quit()
     sys.exit()
+
+if __name__ == "__main__":
+    run_game()

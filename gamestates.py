@@ -476,7 +476,7 @@ class DustSettling(GameState):
             elif self.persist['hit']['by_enemy']:
                 # player looses
                 player_result = 'You loose'
-                if self.persist['target'] == 1:
+                if self.persist['player_character'] == 1:
                     player_comment = 'You died and never stood a chance. The outlaw is truelly the fastes gun in the west. Looking back you should have know this would happen. The town is now at the outlaws mercy.'
                 else:
                     player_comment = 'You die, the hero pulled quicker then you. People where right you had lost your edge and now your life to the hero. You hear the people cheer him on as he gets embracced by the girl you had been trying to court while running the town.'
