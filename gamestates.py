@@ -15,6 +15,7 @@ class PlayerSelect(GameState):
     def __init__(self):
         super(PlayerSelect, self).__init__()
         self.font = pg.font.Font('resources/fonts/aesymatt.ttf', 50)
+        self.font_small = pg.font.Font('resources/fonts/aesymatt.ttf', 20)
         self.shooters = {
             1: pg.image.load('resources/images/shooter-1.jpg'),
             2: pg.image.load('resources/images/shooter-2.jpg')
@@ -87,8 +88,11 @@ class PlayerSelect(GameState):
     def draw(self, surface):
         surface.fill((0, 0, 0))
 
-        rendered_text = self.font.render(f"You are the {self.clipping[self.target]['name']} in this story", False, (255, 255, 255))
+        rendered_text = self.font.render(f"You are the {self.clipping[self.target]['name']} of this story", False, (255, 255, 255))
         surface.blit(rendered_text, (int(int(1024 - rendered_text.get_rect().width) / 2), 20))
+
+        rendered_text = self.font_small.render("Press space to select your character", False, (200, 200, 200))
+        surface.blit(rendered_text, (int(940 - rendered_text.get_rect().width), 510))
 
         for shooter_id, shooter_image in self.shooters.items():
             shooter_rect = shooter_image.get_rect()
