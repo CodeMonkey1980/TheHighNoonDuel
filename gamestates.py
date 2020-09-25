@@ -11,6 +11,46 @@ from text_wrap import draw_text
 from util import between
 
 
+class TitleScreen(GameState):
+    def __init__(self):
+        super(TitleScreen, self).__init__()
+        self.next_state = "PLAYERSELECT"
+        self.font_big = pg.font.Font('resources/fonts/aesymatt.ttf', 90)
+        self.font = pg.font.Font('resources/fonts/aesymatt.ttf', 50)
+        self.font_small = pg.font.Font('resources/fonts/aesymatt.ttf', 20)
+
+    def process_events(self, key_events, mouse_events):
+        if key_events.get(pg.K_SPACE) == 'released':
+            self.done = True
+
+    def draw(self, surface):
+        surface.fill((0, 0, 0))
+        rendered_white_text = self.font_big.render('The High Noon Duel', False, (255, 255, 255))
+        x = int(int(1024 - rendered_white_text.get_rect().width)/2)
+        y = 60
+        # for offset in [{'x': -1, 'y': 0}, {'x': 1, 'y': 0}, {'x': 0, 'y': -1}, {'x': 0, 'y': 1}]:
+        #     surface.blit(rendered_white_text, (x + offset['x'], y + offset['y']))
+        surface.blit(rendered_white_text, (x, y))
+
+        y = 200
+        for entry in [
+            '- Quickest draw 12000 ms',
+            '- 20 wins as Outlaw over 3 loses',
+            '- 10 wins as Hero over 200 loses'
+        ]:
+            stat_text = self.font.render(entry, False, (255, 255, 255))
+            surface.blit(stat_text, (x, y))
+            y += 50
+
+        action_text = self.font_small.render('Press space to start', False, (200, 200, 200))
+        x = int(int(1024 - action_text.get_rect().width)/2)
+        y = 500
+        surface.blit(action_text, (x, y))
+
+    def update(self, dt):
+        pass
+
+
 class PlayerSelect(GameState):
     def __init__(self):
         super(PlayerSelect, self).__init__()
@@ -368,7 +408,7 @@ class DustSettling(GameState):
         self.player_comment = None
         self.render_text = None
         self.draw_next_page = True
-        self.next_state = 'PLAYERSELECT'
+        self.next_state = 'TITLESCREEN'
 
     def startup(self, persistent):
         print(persistent)
