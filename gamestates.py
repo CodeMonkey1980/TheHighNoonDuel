@@ -6,6 +6,7 @@ from random import randint
 import pygame as pg
 
 import pyganim
+from highscore import load_highscore_data, save_highscore_data
 from state_engine import GameState
 from text_wrap import draw_text
 from util import between
@@ -18,6 +19,7 @@ class TitleScreen(GameState):
         self.font_big = pg.font.Font('resources/fonts/aesymatt.ttf', 90)
         self.font = pg.font.Font('resources/fonts/aesymatt.ttf', 50)
         self.font_small = pg.font.Font('resources/fonts/aesymatt.ttf', 20)
+        self.persist['highscore'] = load_highscore_data()
 
     def process_events(self, key_events, mouse_events):
         if key_events.get(pg.K_SPACE) == 'released':
@@ -33,11 +35,20 @@ class TitleScreen(GameState):
         surface.blit(rendered_white_text, (x, y))
 
         y = 200
-        for entry in [
-            '- Quickest draw 12000 ms',
-            '- 20 wins as Outlaw over 3 loses',
-            '- 10 wins as Hero over 200 loses'
-        ]:
+        entries = list()
+        highscore = self.persist['highscore']
+        if highscore['quickest_draw']:
+            entries.append(f"- Quickest draw {highscore['quickest_draw']} ms")
+        if highscore['hero']['wins'] < highscore['outlaw']['wins']:
+            entries.append(f"- {highscore['outlaw']['wins']} wins as Outlaw over {highscore['outlaw']['loses']} loses")
+            entries.append(f"- {highscore['hero']['wins']} wins as Hero over {highscore['hero']['loses']} loses")
+        else:
+            entries.append(f"- {highscore['hero']['wins']} wins as Hero over {highscore['hero']['loses']} loses")
+            entries.append(f"- {highscore['outlaw']['wins']} wins as Outlaw over {highscore['outlaw']['loses']} loses")
+        if highscore['draws']:
+            entries.append(f"- And a total of {highscore['draws']} draws")
+
+        for entry in entries:
             stat_text = self.font.render(entry, False, (255, 255, 255))
             surface.blit(stat_text, (x, y))
             y += 50
@@ -84,38 +95,6 @@ class PlayerSelect(GameState):
         self.next_state = "INSTRUCTIONS"
 
     def process_events(self, key_events, mouse_events):
-        # if key_events.get(pg.K_t) == 'released':
-        #     if self.target == 1:
-        #         self.target = 2
-        #     elif self.target == 2:
-        #         self.target = 1
-
-        # if key_events.get(pg.K_UP) == 'pressed':
-        #     self.clipping[self.target]['offset']['y'] -= 10
-        # if key_events.get(pg.K_DOWN) == 'pressed':
-        #     self.clipping[self.target]['offset']['y'] += 10
-        # if key_events.get(pg.K_LEFT) == 'pressed':
-        #     self.clipping[self.target]['offset']['x'] += 10
-        # if key_events.get(pg.K_RIGHT) == 'pressed':
-        #     self.clipping[self.target]['offset']['x'] -= 10
-
-        # if key_events.get(pg.K_i) == 'released':
-        #     self.clipping[self.target]['zoom'] += .1
-        # if key_events.get(pg.K_o) == 'released':
-        #     self.clipping[self.target]['zoom'] -= .1
-
-        # if key_events.get(pg.K_w) == 'pressed':
-        #     self.clipping[self.target]['position']['y'] -= 10
-        # if key_events.get(pg.K_s) == 'pressed':
-        #     self.clipping[self.target]['position']['y'] += 10
-        # if key_events.get(pg.K_a) == 'pressed':
-        #     self.clipping[self.target]['position']['x'] -= 10
-        # if key_events.get(pg.K_d) == 'pressed':
-        #     self.clipping[self.target]['position']['x'] += 10
-
-        if key_events.get(pg.K_p) == 'released':
-           print(self.clipping)
-
         if key_events.get(pg.K_LEFT) == 'pressed':
             self.target = 1
         if key_events.get(pg.K_RIGHT) == 'pressed':
@@ -417,6 +396,7 @@ class DustSettling(GameState):
         if self.persist['reaction'] is None and self.persist['enemy-reaction'] is None:
             if self.persist['hit']['by_player'] and self.persist['hit']['by_enemy']:
                 # both dead
+                self.persist['highscore']['draws'] += 1
                 player_result = "It's a draw"
                 if self.persist['player_character'] == 1:
                     player_comment = 'You both drew early trying to outwith the other. As a result you died, but by killing the outlaw you managed to save the town. They people in the town made a memorial shrine in your honor.'
@@ -426,19 +406,24 @@ class DustSettling(GameState):
                 # player wins early draw
                 player_result = 'You win'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['wins'] += 1
                     player_comment = 'You saved the town by killing the outlaw. People celebrate you return but what they do now know is that you shot early and caught the outlaw by suprise. These events will way upon you for the rest of your life.'
                 else:
+                    self.persist['highscore']['outlaw']['wins'] += 1
                     player_comment = 'The hero never stood a chance. You are a outlaw and the only thing that matters is that you keep standing. So you draw early and shot him before he knew what happend. The town is yours now.'
             elif not self.persist['hit']['by_player'] and self.persist['hit']['by_enemy']:
                 # player dies early draw
                 player_result = 'You loose'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['loses'] += 1
                     player_comment = 'You died even after trying to pull a fast one and shoot early. As you look up at the outlaw you see him tip his head to you for you effort but you both knew you never stood a chance.'
                 else:
+                    self.persist['highscore']['outlaw']['loses'] += 1
                     player_comment = 'You died even as you pulled early. You must have been sloppy and the hero pulled early as well. As you look up you see the hero his face hang down in shame even though the people cheer him om.'
             else:
                 # stand off early draw
                 player_result = "It's a draw"
+                self.persist['highscore']['draws'] += 1
                 if self.persist['player_character'] == 1:
                     player_comment = 'You drew early but the outlaw did as well. As the dust clears you are both are standing. As you stare off in the distance you here the towns people come to your aid. Your courage has inspired them and the outlaw high tailes it out of there.'
                 else:
@@ -448,19 +433,24 @@ class DustSettling(GameState):
                 # player wins
                 player_result = 'You win'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['wins'] += 1
                     player_comment = 'You saved the town by killing the outlaw. People celebrate your return and as the shindig goes on into the night. But you cannot enjoy the party knowing that you had to resort to cheating.'
                 else:
+                    self.persist['highscore']['outlaw']['wins'] += 1
                     player_comment = 'You are a outlaw and this town is yours. As the hero goes down you walk passed him and smile as he had played by the rules. That night as your boys take back the town its people tremble in fear for you.'
             elif self.persist['hit']['by_enemy']:
                 # player looses
                 player_result = 'You loose'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['loses'] += 1
                     player_comment = 'You died even after trying to pull a fast one and shoot early. As you look up at the outlaw you see him tip his head to you for you effort but you both knew you never stood a chance.'
                 else:
+                    self.persist['highscore']['outlaw']['loses'] += 1
                     player_comment = 'You died even as you pulled early. This hero was more then you are used to. He was unphased by your deceit and shot through. As you bleed out you hear the peoplecheer him om.'
             else:
                 # it is a draw
                 player_result = "It's a draw"
+                self.persist['highscore']['draws'] += 1
                 if self.persist['player_character'] == 1:
                     player_comment = 'You drew early and shot although you missed your drawing early put the outlaw enough on edge that he missed as well. As you are now at a stand off the towns people are coming to your aid making the outlaw hightail it out of there.'
                 else:
@@ -470,19 +460,24 @@ class DustSettling(GameState):
                 # player wins
                 player_result = 'You win'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['wins'] += 1
                     player_comment = 'Even though the outlaw shot early he missed your heart kept true and killed the outlaw. People celebrate your return and as the shindig goes on into the night the bell of the ball asks you to dance. It is the start of something beautyfull.'
                 else:
+                    self.persist['highscore']['outlaw']['wins'] += 1
                     player_comment = 'You are a outlaw and this town is yours. As the hero goes down you tip your hat to him for trying to pull a fast one. To bad for him you have got nerves of steel. That night as your boys take back the town its people tremble in fear for you.'
             elif self.persist['hit']['by_enemy']:
                 # player looses
                 player_result = 'You loose'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['loses'] += 1
                     player_comment = 'You died and never stood a chance. He pulled on you before the coin hit the ground. Looking back you should have know this would happen. But how could you cheat you are a hero. The town is now at the outlaws mercy.'
                 else:
+                    self.persist['highscore']['outlaw']['loses'] += 1
                     player_comment = 'You die, the hero pulled early and caught you by suprise. You hear the people cheer him on as he looks away in disgrace on what he had to do. You leave this world knowing you left your mark on the hero his life.'
             else:
                 # it is a draw
                 player_result = "It's a draw"
+                self.persist['highscore']['draws'] += 1
                 if self.persist['player_character'] == 1:
                     player_comment = 'The outlaw drew early but still missed even though it rattled you enough to miss as well. As you are now at a stand off the towns people are coming to your aid making the outlaw hightail it out of there.'
                 else:
@@ -492,19 +487,24 @@ class DustSettling(GameState):
                 # player wins
                 player_result = 'You win'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['wins'] += 1
                     player_comment = 'Your shot was quicker then the outlaw and as he falls to the ground you see him reconzie your skills in his dying breath. You are the new gun in town. People celebrate your return and as the shindig goes on into the night the bell of the ball asks you to dance. It is the start of something beautyfull.'
                 else:
+                    self.persist['highscore']['outlaw']['wins'] += 1
                     player_comment = 'You have always and always will be the quickest gun. As the hero goes down you look at him with pitty. As you ride back into town you see your girl at the bar wave at you. That night as your boys take back the town its people tremble in fear for you as you share a bottle with your girl.'
             elif self.persist['hit']['by_enemy']:
                 # player looses
                 player_result = 'You loose'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['loses'] += 1
                     player_comment = 'You died and never stood a chance. Even though you are a quicker shot the outlaw has a better aim. Looking back you should have know this would happen. The town is now at the outlaws mercy.'
                 else:
+                    self.persist['highscore']['outlaw']['loses'] += 1
                     player_comment = 'You die, even though you pulled quicker the hero his aim was true. People where right you had lost your edge and now your life to the hero. You hear the people cheer him on as he gets embracced by the girl you had been trying to court while running the town.'
             else:
                 # it is a draw
                 player_result = "It's a draw"
+                self.persist['highscore']['draws'] += 1
                 if self.persist['player_character'] == 1:
                     player_comment = 'Even though your draw was quicker then the outlaw you missed. But this was enough to make him miss as well. As you are now at a stand off the towns people are coming to your aid making the outlaw hightail it out of there.'
                 else:
@@ -514,19 +514,24 @@ class DustSettling(GameState):
                 # player wins
                 player_result = 'You win'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['wins'] += 1
                     player_comment = 'The outlaw was quicker in the draw but your aim was true and hit him. People celebrate your return and as the shindig goes on into the night the bell of the ball asks you to dance. It is the start of something beautyfull.'
                 else:
+                    self.persist['highscore']['outlaw']['wins'] += 1
                     player_comment = 'You may not be the quickest gun anymore you still are the best shot. As the hero goes down you look at him with pitty that he missed you with his shot. As you ride back into town you see your girl at the bar wave at you. That night as your boys take back the town its people tremble in fear for you as you share a bottle with your girl.'
             elif self.persist['hit']['by_enemy']:
                 # player looses
                 player_result = 'You loose'
                 if self.persist['player_character'] == 1:
+                    self.persist['highscore']['hero']['loses'] += 1
                     player_comment = 'You died and never stood a chance. The outlaw is truelly the fastes gun in the west. Looking back you should have know this would happen. The town is now at the outlaws mercy.'
                 else:
+                    self.persist['highscore']['outlaw']['loses'] += 1
                     player_comment = 'You die, the hero pulled quicker then you. People where right you had lost your edge and now your life to the hero. You hear the people cheer him on as he gets embracced by the girl you had been trying to court while running the town.'
             else:
                 # it is a draw
                 player_result = "It's a draw"
+                self.persist['highscore']['draws'] += 1
                 if self.persist['player_character'] == 1:
                     player_comment = 'Even though the outlaw was quicker he missed. But this was enough to make you miss as well. As you are now at a stand off the towns people are coming to your aid making the outlaw hightail it out of there.'
                 else:
@@ -534,10 +539,14 @@ class DustSettling(GameState):
         else:
             player_result = 'Unexpected outcome'
             player_comment = 'If you are reading this you broke the game. Oke you won. Happy now.'
+        if self.persist['highscore']['quickest_draw'] is None \
+                or self.persist['highscore']['quickest_draw'] > self.persist['reaction']:
+            self.persist['highscore']['quickest_draw'] = self.persist['reaction']
         self.player_result = f"{player_result} {'Hero' if self.persist['player_character'] == 1 else 'Outlaw'}"
         self.player_comment = player_comment
         self.render_text = self.player_comment
         self.draw_next_page = True
+        save_highscore_data(self.persist['highscore'])
 
     def process_events(self, key_events, mouse_events):
         if key_events.get(pg.K_q) == 'released':
