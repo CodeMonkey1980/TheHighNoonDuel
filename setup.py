@@ -1,13 +1,14 @@
 from setuptools import setup, find_packages
 
+import gameinfo
 
 with open('README.md') as f:
     readme = f.read()
 
 setup(
-    name='The High Noon Duel',
-    version='0.1.0',
-    description='A reaction speed game set in the old old west.',
+    name=gameinfo.name,
+    version=gameinfo.version,
+    description=gameinfo.description,
     long_descriptio=readme,
     author='Sebastiaan Vreeken',
     author_email='s.j.w.vreeken@hotmail.com',
