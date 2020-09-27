@@ -26,6 +26,8 @@ class TitleScreen(GameState):
             self.done = True
 
     def draw(self, surface):
+        def _microseconds_to_seconds(microseconds):
+            return str(microseconds / 100000)
         surface.fill((0, 0, 0))
         rendered_white_text = self.font_big.render('The High Noon Duel', False, (255, 255, 255))
         x = int(int(1024 - rendered_white_text.get_rect().width)/2)
@@ -38,7 +40,7 @@ class TitleScreen(GameState):
         entries = list()
         highscore = self.persist['highscore']
         if highscore['quickest_draw']:
-            entries.append(f"- Quickest draw {highscore['quickest_draw']} ms")
+            entries.append(f"- Quickest draw {_microseconds_to_seconds(highscore['quickest_draw'])} {'of a second' if highscore['quickest_draw'] < 100000 else 'seconds'}")
         if highscore['hero']['wins'] < highscore['outlaw']['wins']:
             entries.append(f"- {highscore['outlaw']['wins']} wins as Outlaw over {highscore['outlaw']['loses']} loses")
             entries.append(f"- {highscore['hero']['wins']} wins as Hero over {highscore['hero']['loses']} loses")
