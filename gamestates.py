@@ -355,8 +355,16 @@ class ShootOut(GameState):
                 self.slider['direction'] = -1
             self.slider['value'] += int(self.slider['speed'] * self.slider['direction'])
 
-            if self.slider['spread'] > 40:
+            if self.slider['spread'] > -10:
                 self.slider['spread'] -= 1
+            elif self.slider['spread'] <= -10:
+                self.shots_taken = datetime.utcnow()
+                self.persist['hit'] = {
+                    'by_player': False,
+                    'by_enemy': True
+                }
+                self.persist['reaction'] = False
+                self.done = True
         elif (datetime.utcnow() - self.shots_taken).microseconds > 200000:
             self.done = True
 
@@ -393,7 +401,17 @@ class DustSettling(GameState):
         print(persistent)
         self.persist = persistent
         # determine outcome
-        if self.persist['reaction'] is None and self.persist['enemy-reaction'] is None:
+        if self.persist['reaction'] is False:
+            # player dies early draw
+            player_result = 'You loose'
+            if self.persist['player_character'] == 1:
+                self.persist['highscore']['hero']['loses'] += 1
+                player_comment = 'As you faced the outlaw his gaze froze you in you place. Unable to move the outlaw took aim and shot you straight trough the heart. You heard the murmering of the crowed in the town.'
+            else:
+                self.persist['highscore']['outlaw']['loses'] += 1
+                player_comment = 'The charisma of this hero was overwhelming. Your famous nerves of steel became like wet pasta in his presense. As you stood there frozen the hero took aim and shot you through the heart.'
+
+        elif self.persist['reaction'] is None and self.persist['enemy-reaction'] is None:
             if self.persist['hit']['by_player'] and self.persist['hit']['by_enemy']:
                 # both dead
                 self.persist['highscore']['draws'] += 1
@@ -539,8 +557,8 @@ class DustSettling(GameState):
         else:
             player_result = 'Unexpected outcome'
             player_comment = 'If you are reading this you broke the game. Oke you won. Happy now.'
-        if self.persist['highscore']['quickest_draw'] is None \
-                or self.persist['highscore']['quickest_draw'] > self.persist['reaction']:
+
+        if self.persist['reaction'] and (self.persist['highscore']['quickest_draw'] is None or self.persist['highscore']['quickest_draw'] > self.persist['reaction']):
             self.persist['highscore']['quickest_draw'] = self.persist['reaction']
         self.player_result = f"{player_result} {'Hero' if self.persist['player_character'] == 1 else 'Outlaw'}"
         self.player_comment = player_comment
