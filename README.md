@@ -31,3 +31,12 @@ https://www.1001fonts.com/west-england-font.html
 
 Font 'aesymatt' by Brain Kent
 https://www.1001fonts.com/ae-systematic-tt-brk-font.html
+
+Sound Western Shot Modern 2 by Rock Savage
+https://freesound.org/people/Rock%20Savage/sounds/58904/
+
+Sound High Noon by Ctown68
+https://freesound.org/people/ctowns68/sounds/529226/
+
+Sound Thud by Yummy9987
+https://freesound.org/people/yummy9987/sounds/494926/
